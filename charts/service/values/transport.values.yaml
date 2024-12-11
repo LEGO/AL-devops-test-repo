@@ -1,0 +1,19 @@
+service:
+  name: transport-api
+  imageName: transport-api
+  replicas: 2
+  container:
+    ports:
+      - port: 5000
+        name: rest
+        protocol: Http1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+  ingress:
+    enabled: true
+    subdomain: transport-order

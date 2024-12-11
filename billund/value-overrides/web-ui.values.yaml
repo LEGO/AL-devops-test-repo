@@ -1,0 +1,4 @@
+service:
+  envVars:
+    - name: SomeFeatureToggle
+      value: "true"

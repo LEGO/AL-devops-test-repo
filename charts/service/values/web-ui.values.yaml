@@ -1,0 +1,20 @@
+service:
+  name: web-ui
+  imageName: web-app
+  container:
+    ports:
+      - port: 3001
+        name: rest
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+  ingress:
+    enabled: true
+    subdomain: ui # This should probably at some point just be nothing. 
+  volumes:
+    - name: tmp
+      emptyDir: {}

@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: combi-proxy
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: autlog-kom
+  syncPolicy:
+   automated:
+     prune: true
+     selfHeal: true
+  destination:
+      server: https://kubernetes.default.svc
+      namespace: autlog-kom
+  source:
+    repoURL: git@github.com:ORG/REPO.git
+    targetRevision: main
+    path: charts/service
+    helm:
+      valueFiles:
+        - values.yaml
+        - ../../billund/values.yaml
+        - values/proxy.values.yaml
+        - ../../billund/value-overrides/proxy.values.yaml
+        

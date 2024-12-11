@@ -1,0 +1,22 @@
+service:
+  name: fleet-orders-api
+  imageName: fleet-orders-api
+  replicas: 2
+  container:
+    ports:
+      - port: 5004
+        name: rest
+        protocol: Http1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+  ingress:
+    enabled: true
+    subdomain: fleet-order
+  envVars:
+    - name: FLEET_ORDER_PROVIDER
+      value: placeholder

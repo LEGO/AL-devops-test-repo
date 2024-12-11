@@ -1,0 +1,30 @@
+service:
+  name: event-proxy
+  imageName: event-proxy
+  replicas: 2
+  container:
+    ports:
+      - port: 5008
+        name: rest
+        protocol: Http1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+  ingress:
+    enabled: false
+  azure:
+    clientId:
+      envVarName: placeHolder
+      value: placeHolder
+  secrets:
+    - k8secretName: placeHolder
+      SecretStoreName: placeHolder
+      SecretStoreKeys:
+        - placeHolder     
+
+  
+      

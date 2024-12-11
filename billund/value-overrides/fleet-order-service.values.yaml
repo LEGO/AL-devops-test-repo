@@ -1,0 +1,9 @@
+service:
+  secrets:
+    - k8secretName: secrets
+      SecretStoreName: runtimes/test-runtime/secrets
+      SecretStoreKeys:
+        - AzureAd__ClientSecret
+  envVars:
+    - name: SomeFeatureToggle
+      value: "true"

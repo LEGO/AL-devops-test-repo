@@ -1,0 +1,108 @@
+{{- if .Values.deployments.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}-deployment
+spec:
+  replicas: {{ .Values.service.replicas }}
+  strategy:
+    {{- .Values.strategy | toYaml | nindent 4 }}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      serviceAccountName: {{ .Values.service.name }}-sa
+      imagePullSecrets:
+        - name: novus-pull-secret
+      containers:
+        - name: {{ .Values.service.name }}
+          image: "{{ .Values.artifactory.registry }}/{{ .Values.artifactory.repo }}/{{ .Values.service.imageName }}:{{ .Values.artifactory.imageTag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            {{- range $port := .Values.service.container.ports }}
+            - containerPort: {{ $port.port }}
+              name: {{ $port.name }}
+            {{- end }}
+          resources:
+            {{- .Values.service.container.resources | toYaml | nindent 12 }}
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: rest
+            periodSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: rest
+            periodSeconds: 5
+          env:
+            {{- if eq .Values.service.ingress.enabled true }}
+            - name: ExternalAddress
+              value: https://{{ .Values.service.ingress.subdomain }}.{{ .Values.runtime.dns }}.{{ .Values.runtime.env }}.novus.internal.lego
+            {{- end }}
+            {{- range $i, $envVar := .Values.clusterSpecificEnvVars }}
+            - name: {{ $envVar.name }}
+              value: {{ quote $envVar.value }}
+            {{- end }}
+            {{- range $i, $secretStore := .Values.externalSecrets }} # external secrets, we use all the keys listed in the values file
+            {{- range $secretStore.SecretStoreKeys}}
+            - name: {{ . }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretStore.k8secretName }}
+                  key: {{ . }}
+            {{- end }}
+            {{- end }}
+            {{- range $i, $secretStore := .Values.service.secrets }} # external secrets, we use all the keys listed in the values file
+            {{- range $secretStore.SecretStoreKeys}}
+            - name: {{ . }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretStore.k8secretName }}
+                  key: {{ . }}
+            {{- end }}
+            {{- end }}
+            {{- range $port := .Values.service.container.ports }}
+            - name: "Kestrel__Endpoints__{{ $port.name }}__Url"
+              value: "http://+:{{ $port.port }}"
+            - name: Kestrel__Endpoints__{{ $port.name }}__Protocols
+              value: {{ $port.protocol }}
+            {{- end }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://novus-opentelemetry-collector.novus-telemetry.svc.cluster.local:4317
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: deployment.environment={{ $.Values.runtime.env }},k8s.namespace.name={{ $.Release.Namespace }}
+            {{ if .Values.service.azure }}
+            - name: {{ .Values.service.azure.clientId.name  | quote }}
+              value: {{ .Values.service.azure.clientId.value  | quote }}
+            {{ end }} 
+            {{ if .Values.service.envVars }}
+            {{- range $i, $envVar := .Values.service.envVars }}
+            - name: {{ $envVar.name }}
+              value: {{ quote $envVar.value }}
+            {{- end }}
+            {{ end }}
+          {{ if .Values.service.volumes }}
+          volumeMounts:
+            {{- range $volumeMount := .Values.service.volumes }}
+            - mountPath: /{{ $volumeMount.name }}
+              name: {{ $volumeMount.name }}
+            {{ end }}
+          {{ end }}
+      {{ if .Values.service.volumes }}
+      volumes:
+      {{- range $volume := .Values.service.volumes }}
+        - name: {{ $volume.name }}
+          emptyDir: {}
+      {{- end }}  
+      {{ end }}
+{{- end }}

@@ -1,0 +1,21 @@
+runtime:
+  name: autlog-kom
+  env: prod
+  dns: autlog-kom
+externalSecrets:
+  - k8secretName: kld-secrets
+    SecretStoreName: runtimes/test-runtime/secrets
+    SecretStoreKeys:
+      - ConnectionStrings__SqlServer
+      - ConnectionStrings__RabbitMQ
+clusterSpecificEnvVars:
+  - name: PLANT_ID
+    value: 300
+  - name: ConnectionStrings__LocationsApi
+    value: http://locations-api-svc:5003
+  - name: ConnectionStrings__LocationsRestApi
+    value: http://locations-api-svc:5002
+  - name: ASPNETCORE_ENVIRONMENT
+    value: Production
+artifactory:
+  imageTag: 0.240.0

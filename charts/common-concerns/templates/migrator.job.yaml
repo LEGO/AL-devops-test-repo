@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration-job-{{- template "replaceDots" .Values.artifactory.imageTag }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    argocd.argoproj.io/sync-options: Force=true,Replace=true
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      imagePullSecrets:
+        - name: novus-pull-secret
+      containers:
+        - name: db-migration-job-{{- template "replaceDots" .Values.artifactory.imageTag }}
+          image: "artifactory.com/autlog/migrator:{{ .Values.artifactory.imageTag }}"
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+          env:
+            {{- range $i, $envVar := .Values.clusterSpecificEnvVars }}
+            - name: {{ $envVar.name }}
+              value: {{ quote $envVar.value }}
+            {{- end }}
+            {{- range $i, $secretStore := $.Values.externalSecrets }} # external secrets we use all the keys listed in the values file
+            {{- range $secretStore.SecretStoreKeys}}
+            - name: {{ . }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretStore.k8secretName }}
+                  key: {{ . }}
+            {{- end }}
+            {{- end }}
+      restartPolicy: Never

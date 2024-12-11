@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JsonSchemaMappingsProjectConfiguration">
+    <state>
+      <map>
+        <entry key="Rabbit-Bitnami-helm-values">
+          <value>
+            <SchemaInfo>
+              <option name="generatedName" value="New Schema" />
+              <option name="name" value="Rabbit-Bitnami-helm-values" />
+              <option name="relativePathToSchema" value="https://github.com/bitnami/charts/blob/main/bitnami/rabbitmq/values.schema.json" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="path" value="kla-non-prod/testbed/rabbit.values.yaml" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+      </map>
+    </state>
+  </component>
+</project>

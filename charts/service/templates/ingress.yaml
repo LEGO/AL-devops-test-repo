@@ -1,0 +1,22 @@
+{{- if eq .Values.service.ingress.enabled true }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.service.name }}-ingress
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.service.ingress.subdomain }}.{{ .Values.runtime.dns }}.{{ .Values.runtime.env }}.novus.internal.lego
+      secretName: tls-certificate
+  rules:
+    - host: {{ .Values.service.ingress.subdomain }}.{{ .Values.runtime.dns }}.{{ .Values.runtime.env }}.novus.internal.lego
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.service.name }}-svc
+                port:
+                  name: rest         
+{{- end }}

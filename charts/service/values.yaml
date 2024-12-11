@@ -1,0 +1,12 @@
+deployments:
+  enabled: true
+artifactory:
+  registry: artifactory.com
+  repo: autlog
+clusterSpecificEnvVars:
+  - name: placeholder
+    value: placeholder
+runtime:
+  name: placeholder
+  env: placeholder
+imageTag: placeholder
